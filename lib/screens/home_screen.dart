@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
 import '../providers/book_provider.dart';
 import 'book_list_screen.dart';
 
@@ -45,9 +44,9 @@ class HomeScreen extends StatelessWidget {
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.logout),
+                icon: const Icon(Icons.person),
                 onPressed: () {
-                  Provider.of<AuthProvider>(context, listen: false).logout();
+                  Navigator.of(context).pushNamed('/profile');
                 },
               ),
             ],

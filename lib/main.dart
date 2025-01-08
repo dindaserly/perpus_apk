@@ -6,19 +6,28 @@ import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/book_list_screen.dart';
 import 'screens/book_detail_screen.dart';
+import 'screens/profile_screen.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Create and initialize providers
+  final authProvider = AuthProvider();
+  await authProvider.initializeApp();
+
+  runApp(MyApp(authProvider: authProvider));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final AuthProvider authProvider;
+
+  const MyApp({super.key, required this.authProvider});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider(create: (_) => BookProvider()),
       ],
       child: Consumer<AuthProvider>(
@@ -163,6 +172,7 @@ class MyApp extends StatelessWidget {
           routes: {
             HomeScreen.routeName: (ctx) => const HomeScreen(),
             BookListScreen.routeName: (ctx) => const BookListScreen(),
+            '/profile': (ctx) => const ProfileScreen(),
           },
           onGenerateRoute: (settings) {
             if (settings.name == BookDetailScreen.routeName) {
