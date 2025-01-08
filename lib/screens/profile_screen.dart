@@ -3,8 +3,59 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool _isLoggingOut = false;
+
+  Future<void> _handleLogout(BuildContext context) async {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    setState(() {
+      _isLoggingOut = true;
+    });
+
+    try {
+      await authProvider.logout();
+      if (!mounted) return;
+
+      scaffoldMessenger.showSnackBar(
+        const SnackBar(
+          content: Text('Berhasil logout'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => const LoginScreen(),
+        ),
+        (route) => false,
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      scaffoldMessenger.showSnackBar(
+        const SnackBar(
+          content: Text('Gagal logout. Silakan coba lagi.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoggingOut = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,18 +92,17 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
-                    onPressed: () {
-                      Provider.of<AuthProvider>(context, listen: false)
-                          .logout();
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                        (route) => false,
-                      );
-                    },
-                    icon: const Icon(Icons.logout),
-                    label: const Text('Logout'),
+                    onPressed:
+                        _isLoggingOut ? null : () => _handleLogout(context),
+                    icon: _isLoggingOut
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child:
+                                CircularProgressIndicator(color: Colors.white),
+                          )
+                        : const Icon(Icons.logout),
+                    label: Text(_isLoggingOut ? 'Logging out...' : 'Logout'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,

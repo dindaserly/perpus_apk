@@ -14,8 +14,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController(text: 'admin');
-  final _passwordController = TextEditingController(text: 'admin123');
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -51,8 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text('Login Gagal'),
-          content: const Text(
-              'Username atau password salah!\n\nGunakan:\nUsername: admin\nPassword: admin123'),
+          content: const Text('Username atau password salah!'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
@@ -143,12 +142,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               )
                             : const Text('Login'),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Default Login:\nUsername: admin\nPassword: admin123',
-                      style: TextStyle(color: Colors.grey),
-                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),

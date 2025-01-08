@@ -578,105 +578,210 @@ class _AddBookDialogState extends State<AddBookDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.book == null ? 'Tambah Buku' : 'Edit Buku'),
-      content: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                initialValue: _title,
-                decoration: const InputDecoration(labelText: 'Judul'),
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Judul harus diisi' : null,
-                onSaved: (value) => _title = value!,
+    final theme = Theme.of(context);
+
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        constraints: const BoxConstraints(maxWidth: 400),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.book == null ? 'Tambah Buku' : 'Edit Buku',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
-              TextFormField(
-                initialValue: _author,
-                decoration: const InputDecoration(labelText: 'Penulis'),
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Penulis harus diisi' : null,
-                onSaved: (value) => _author = value!,
+            ),
+            const SizedBox(height: 24),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Basic Info Section
+                      _buildSectionTitle(theme, 'Informasi Dasar'),
+                      TextFormField(
+                        initialValue: _title,
+                        decoration: const InputDecoration(
+                          labelText: 'Judul',
+                          prefixIcon: Icon(Icons.book),
+                        ),
+                        validator: (value) =>
+                            value?.isEmpty ?? true ? 'Judul harus diisi' : null,
+                        onSaved: (value) => _title = value!,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        initialValue: _author,
+                        decoration: const InputDecoration(
+                          labelText: 'Penulis',
+                          prefixIcon: Icon(Icons.person),
+                        ),
+                        validator: (value) => value?.isEmpty ?? true
+                            ? 'Penulis harus diisi'
+                            : null,
+                        onSaved: (value) => _author = value!,
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Publishing Info Section
+                      _buildSectionTitle(theme, 'Informasi Penerbitan'),
+                      TextFormField(
+                        initialValue: _isbn,
+                        decoration: const InputDecoration(
+                          labelText: 'ISBN',
+                          prefixIcon: Icon(Icons.qr_code),
+                        ),
+                        validator: (value) =>
+                            value?.isEmpty ?? true ? 'ISBN harus diisi' : null,
+                        onSaved: (value) => _isbn = value!,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        initialValue: _publisher,
+                        decoration: const InputDecoration(
+                          labelText: 'Penerbit',
+                          prefixIcon: Icon(Icons.business),
+                        ),
+                        validator: (value) => value?.isEmpty ?? true
+                            ? 'Penerbit harus diisi'
+                            : null,
+                        onSaved: (value) => _publisher = value!,
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              initialValue: _publicationYear.toString(),
+                              decoration: const InputDecoration(
+                                labelText: 'Tahun Terbit',
+                                prefixIcon: Icon(Icons.calendar_today),
+                              ),
+                              keyboardType: TextInputType.number,
+                              validator: (value) {
+                                if (value?.isEmpty ?? true) {
+                                  return 'Tahun terbit harus diisi';
+                                }
+                                final year = int.tryParse(value!);
+                                if (year == null) {
+                                  return 'Tahun harus berupa angka';
+                                }
+                                if (year < 1900 || year > DateTime.now().year) {
+                                  return 'Tahun tidak valid';
+                                }
+                                return null;
+                              },
+                              onSaved: (value) =>
+                                  _publicationYear = int.parse(value!),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              initialValue: _stock.toString(),
+                              decoration: const InputDecoration(
+                                labelText: 'Stok',
+                                prefixIcon: Icon(Icons.inventory),
+                              ),
+                              keyboardType: TextInputType.number,
+                              validator: (value) {
+                                if (value?.isEmpty ?? true) {
+                                  return 'Stok harus diisi';
+                                }
+                                final stock = int.tryParse(value!);
+                                if (stock == null) {
+                                  return 'Stok harus berupa angka';
+                                }
+                                if (stock < 0) {
+                                  return 'Stok tidak boleh negatif';
+                                }
+                                return null;
+                              },
+                              onSaved: (value) => _stock = int.parse(value!),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Additional Info Section
+                      _buildSectionTitle(theme, 'Informasi Tambahan'),
+                      DropdownButtonFormField<String>(
+                        value: _category,
+                        decoration: const InputDecoration(
+                          labelText: 'Kategori',
+                          prefixIcon: Icon(Icons.category),
+                        ),
+                        onChanged: (value) =>
+                            setState(() => _category = value!),
+                        validator: (value) =>
+                            value == null ? 'Kategori harus dipilih' : null,
+                        items: _categories
+                            .map((category) => DropdownMenuItem<String>(
+                                  value: category,
+                                  child: Text(category),
+                                ))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        initialValue: _description,
+                        decoration: const InputDecoration(
+                          labelText: 'Deskripsi',
+                          prefixIcon: Icon(Icons.description),
+                          alignLabelWithHint: true,
+                        ),
+                        maxLines: 3,
+                        validator: (value) => value?.isEmpty ?? true
+                            ? 'Deskripsi harus diisi'
+                            : null,
+                        onSaved: (value) => _description = value!,
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              TextFormField(
-                initialValue: _isbn,
-                decoration: const InputDecoration(labelText: 'ISBN'),
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'ISBN harus diisi' : null,
-                onSaved: (value) => _isbn = value!,
-              ),
-              TextFormField(
-                initialValue: _publisher,
-                decoration: const InputDecoration(labelText: 'Penerbit'),
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Penerbit harus diisi' : null,
-                onSaved: (value) => _publisher = value!,
-              ),
-              TextFormField(
-                initialValue: _publicationYear.toString(),
-                decoration: const InputDecoration(labelText: 'Tahun Terbit'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value?.isEmpty ?? true) return 'Tahun terbit harus diisi';
-                  final year = int.tryParse(value!);
-                  if (year == null) return 'Tahun harus berupa angka';
-                  if (year < 1900 || year > DateTime.now().year) {
-                    return 'Tahun tidak valid';
-                  }
-                  return null;
-                },
-                onSaved: (value) => _publicationYear = int.parse(value!),
-              ),
-              TextFormField(
-                initialValue: _stock.toString(),
-                decoration: const InputDecoration(labelText: 'Stok'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value?.isEmpty ?? true) return 'Stok harus diisi';
-                  final stock = int.tryParse(value!);
-                  if (stock == null) return 'Stok harus berupa angka';
-                  if (stock < 0) return 'Stok tidak boleh negatif';
-                  return null;
-                },
-                onSaved: (value) => _stock = int.parse(value!),
-              ),
-              DropdownButtonFormField<String>(
-                value: _category,
-                decoration: const InputDecoration(labelText: 'Kategori'),
-                onChanged: (value) => setState(() => _category = value!),
-                validator: (value) =>
-                    value == null ? 'Kategori harus dipilih' : null,
-                items: _categories
-                    .map((category) => DropdownMenuItem<String>(
-                          value: category,
-                          child: Text(category),
-                        ))
-                    .toList(),
-              ),
-              TextFormField(
-                initialValue: _description,
-                decoration: const InputDecoration(labelText: 'Deskripsi'),
-                maxLines: 3,
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Deskripsi harus diisi' : null,
-                onSaved: (value) => _description = value!,
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Batal'),
+                ),
+                const SizedBox(width: 16),
+                ElevatedButton.icon(
+                  onPressed: _saveBook,
+                  icon: Icon(widget.book == null ? Icons.add : Icons.save),
+                  label: Text(widget.book == null ? 'Tambah' : 'Simpan'),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Batal'),
+    );
+  }
+
+  Widget _buildSectionTitle(ThemeData theme, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Text(
+        title,
+        style: theme.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: theme.primaryColor,
         ),
-        TextButton(
-          onPressed: _saveBook,
-          child: Text(widget.book == null ? 'Tambah' : 'Simpan'),
-        ),
-      ],
+      ),
     );
   }
 
